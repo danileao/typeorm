@@ -1,24 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 
-export const validateUsers = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  await body("email").isEmail().withMessage("Invalid email").run(request);
-  await body("username")
-    .isLength({ min: 10 })
-    .withMessage("Invalid username")
-    .run(request);
+export const validateUsers = [
+  body("email").isEmail().withMessage("Invalid email"),
+  body("name").notEmpty().withMessage("Incorrect name"),
+  body("username").isLength({ min: 10 }).withMessage("Invalid username"),
+  async (request: Request, response: Response, next: NextFunction) => {
+    const errors = validationResult(request);
 
-  await body("name").notEmpty().withMessage("Incorrect name").run(request);
+    if (!errors.isEmpty()) {
+      return response.status(422).json({ errors: errors.array() });
+    }
 
-  const erros = validationResult(request);
-
-  if (!erros.isEmpty()) {
-    return response.status(422).json({ errors: erros.array() });
-  }
-
-  return next();
-};
+    return next();
+  },
+];
